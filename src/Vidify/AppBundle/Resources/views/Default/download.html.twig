@@ -4,7 +4,13 @@
     <div class="panel panel-default">
         <div class="panel-heading">Download</div>
         <div class="panel-body">
-            You ask for {{ url }}
+            <script>
+                var url = "{{ url }}";
+                jQuery.post( '/worker', {url: url}, function( data ) {
+                    $( ".result" ).html('Downloaded ! You can download the video <a href="'+data+'">here</data>');
+                });
+            </script>
+            <div class="result">Downloading ...</div>
         </div>
     </div>
 {% endblock %}

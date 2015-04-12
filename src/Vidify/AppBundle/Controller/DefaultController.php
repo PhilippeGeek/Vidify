@@ -62,22 +62,17 @@ class DefaultController extends Controller
     public function workerAction(){
         @set_time_limit(0); //disable time limit to make sure the whole video is downloaded
 
-        function write_temp($buffer) {
-            global $handle;
-            fwrite($handle, $buffer);
-            return '';   // return EMPTY string, so nothing's internally buffered
-        }
+        $url = urldecode($this->get('request')->request->get('url'));
 
-        $file = tmpfile();
-        echo $file;
+        $file = $this->get('kernel')->getRootDir().'/../web/'.md5($url).'.mp4';
         $handle = fopen($file, 'w');
-        ob_start('write_temp');
-
-        $curl_handle = curl_init($this->get('request')->request->get('url'));
-        curl_setopt($curl_handle, CURLOPT_BUFFERSIZE, 512);
-        curl_exec($curl_handle);
-
-        ob_end_clean();
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FILE, $handle); // write curl response to file
+        curl_exec($ch);
+        echo md5($url).'.mp4';
+        curl_close($ch);
         fclose($handle);
         exit;
     }
@@ -101,6 +96,6 @@ class DefaultController extends Controller
         } else {
             return $this->redirectToRoute('blog_home');
         }
-        return array('url'=>$url);
+        return array('url'=>urlencode($url));
     }
 }
