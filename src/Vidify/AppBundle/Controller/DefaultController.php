@@ -22,9 +22,13 @@ class DefaultController extends Controller
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
+    private static function download_vimeo($id)
+    {
+        $video = json_decode(file_get_contents("https://player.vimeo.com/video/$id/config"));
+        return $video->request->files->h264->hd->url;
+    }
+
     private static function download_youtube($id, $type = 'video/mp4'){
-
-
         parse_str(file_get_contents('http://www.youtube.com/get_video_info?video_id='.$id),$info); //get video info
         $streams = explode(',',$info['url_encoded_fmt_stream_map']); //split the stream map into streams
 
@@ -84,14 +88,18 @@ class DefaultController extends Controller
     public function downloadAction()
     {
         $vidUrl = $this->get('request')->request->get('url');
-//        if (($vidUrl === DefaultController::unparse_url(parse_url($vidUrl)))==false){
-//            return $this->redirectToRoute('blog_home');
-//        }
         $url = parse_url($vidUrl);
         if(array_key_exists('host',$url)) {
-            if ($url['host'] == 'www.youtube.com') {
+            $host = str_replace("www.","",$url['host']);
+            if ($host == 'youtube.com') {
                 parse_str($url["query"], $query);
                 $url = DefaultController::download_youtube($query['v']);
+            } else if($host == 'vimeo.com'){
+                $id = explode('/',$url['path']);
+                $id = $id[sizeof($id)-1];
+                $url = DefaultController::download_vimeo($id);
+            } else {
+                return $this->redirectToRoute('blog_home');
             }
         } else {
             return $this->redirectToRoute('blog_home');
