@@ -18,6 +18,7 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new Braincrafted\Bundle\BootstrapBundle\BraincraftedBootstrapBundle(),
             new AppBundle\AppBundle(),
+            new Vidify\AppBundle\VidifyAppBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

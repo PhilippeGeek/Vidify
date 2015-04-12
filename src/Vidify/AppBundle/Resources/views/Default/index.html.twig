@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="panel panel-default">
+        <div class="panel-heading">Enter video url</div>
+        <div class="panel-body">
+            <form action="/download" method="post" class="form-horizontal">
+                <div class="col-sm-10">
+                    <input class="form-control" name="url" id="form-url" title="Download URL" placeholder="URL">
+                </div>
+                <div class="col-lg-2"><button type="submit" class="btn btn-primary btn-block">Download</button></div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
