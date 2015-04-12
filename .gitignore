@@ -35,3 +35,8 @@
 
 # Composer PHAR
 /composer.phar
+
+# IDEA Project files
+.idea
+*.ipr
+*.ipw
