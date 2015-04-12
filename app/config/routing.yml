@@ -1,3 +1,7 @@
+vidify_media:
+    resource: "@VidifyMediaBundle/Resources/config/routing.yml"
+    prefix:   /
+
 app:
     resource: "@AppBundle/Controller/"
     type:     annotation
