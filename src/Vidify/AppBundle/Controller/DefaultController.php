@@ -104,9 +104,15 @@ class DefaultController extends Controller
                 $id = $id[sizeof($id)-1];
                 return DefaultController::get_vimeo($id);
             } else {
+                $this->get('braincrafted_bootstrap.flash')->error(
+                    'The provider '.$host.' is not supported'
+                );
                 return $this->redirectToRoute('blog_home');
             }
         } else {
+            $this->get('braincrafted_bootstrap.flash')->error(
+                'The url is not valid'
+            );
             return $this->redirectToRoute('blog_home');
         }
     }
