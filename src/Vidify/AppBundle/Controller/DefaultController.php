@@ -5,32 +5,29 @@ namespace Vidify\AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Response;
 
 class DefaultController extends Controller
 {
-    private static function unparse_url($parse_url)
-    {
-        $scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-        $host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
-        $port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-        $user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
-        $pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
-        $pass     = ($user || $pass) ? "$pass@" : '';
-        $path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
-        $query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
-        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-        return "$scheme$user$pass$host$port$path$query$fragment";
+
+    private static function thumbmail_vimeo($id){
+        return "https://i.vimeocdn.com/video/513572288_250.jpg";
     }
 
-    private static function download_vimeo($id)
+    private static function get_vimeo($id)
     {
         $video = json_decode(file_get_contents("https://player.vimeo.com/video/$id/config"));
-        return $video->request->files->h264->hd->url;
+        return array(
+            'url'=>urlencode($video->request->files->h264->hd->url),
+            'thumbnail'=>$video->video->thumbs->base.'_250.jpg',
+            'title'=>$video->video->title);
     }
 
-    private static function download_youtube($id, $type = 'video/mp4'){
+    private static function get_youtube($id, $type = 'video/mp4'){
         parse_str(file_get_contents('http://www.youtube.com/get_video_info?video_id='.$id),$info); //get video info
         $streams = explode(',',$info['url_encoded_fmt_stream_map']); //split the stream map into streams
+
+        $url = null;
 
         foreach($streams as $stream){
             parse_str($stream,$real_stream); //parse the splitted stream
@@ -41,14 +38,23 @@ class DefaultController extends Controller
                 unset($tmp);
             }
             if($stype == $type && ($real_stream['quality'] == 'large' || $real_stream['quality'] == 'medium' || $real_stream['quality'] == 'small')){ //check whether the format is the desired format
-                return $real_stream['url'];
+                $url = $real_stream['url'];
+                break;
             }
         }
 
-        // Return at least one url
-        $stream = $streams[0];
-        parse_str($stream,$real_stream);
-        return $real_stream['url'];
+        if($url === null) {
+            // Return at least one url
+            $stream = $streams[0];
+            parse_str($stream, $real_stream);
+            $url = $real_stream['url'];
+        }
+
+        return array(
+            'url' => urlencode($url),
+            'thumbnail'=> $info['iurlhq'],
+            'title' => $info['title']
+        );
     }
 
     /**
@@ -75,10 +81,9 @@ class DefaultController extends Controller
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_FILE, $handle); // write curl response to file
         curl_exec($ch);
-        echo md5($url).'.mp4';
         curl_close($ch);
         fclose($handle);
-        exit;
+        return new Response(md5($url).'.mp4',200);
     }
 
     /**
@@ -93,17 +98,16 @@ class DefaultController extends Controller
             $host = str_replace("www.","",$url['host']);
             if ($host == 'youtube.com') {
                 parse_str($url["query"], $query);
-                $url = DefaultController::download_youtube($query['v']);
+                return DefaultController::get_youtube($query['v']);
             } else if($host == 'vimeo.com'){
                 $id = explode('/',$url['path']);
                 $id = $id[sizeof($id)-1];
-                $url = DefaultController::download_vimeo($id);
+                return DefaultController::get_vimeo($id);
             } else {
                 return $this->redirectToRoute('blog_home');
             }
         } else {
             return $this->redirectToRoute('blog_home');
         }
-        return array('url'=>urlencode($url));
     }
 }

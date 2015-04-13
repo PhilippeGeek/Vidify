@@ -2,15 +2,27 @@
 
 {% block body %}
     <div class="panel panel-default">
-        <div class="panel-heading">Download</div>
         <div class="panel-body">
             <script>
                 var url = "{{ url }}";
                 jQuery.post( '/worker', {url: url}, function( data ) {
+                    $(".progress").hide();
                     $( ".result" ).html('Downloaded ! You can download the video <a href="'+data+'">here</data>');
                 });
             </script>
-            <div class="result">Downloading ...</div>
+            <div class="col-md-2">
+                <img class="media-object" src="{{ thumbnail }}" alt="Thumbnail" height="100">
+            </div>
+            <div class="col-md-10">
+                <h3>{{ title }}</h3>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                        <span class="sr-only">Downloading ...</span>
+                    </div>
+                </div>
+                <div class="result"></div>
+            </div>
         </div>
+        <div class="panel-footer"><a class="btn-default btn" href="/"><< Previous</a> </div>
     </div>
 {% endblock %}
