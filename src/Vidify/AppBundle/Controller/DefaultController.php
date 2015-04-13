@@ -10,10 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 class DefaultController extends Controller
 {
 
-    private static function thumbmail_vimeo($id){
-        return "https://i.vimeocdn.com/video/513572288_250.jpg";
-    }
-
     private static function get_vimeo($id)
     {
         $video = json_decode(file_get_contents("https://player.vimeo.com/video/$id/config"));
